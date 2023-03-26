@@ -201,3 +201,47 @@ print("==  Calculating fitness ... ==")
 print(get_the_fitness_value(projects, contributors, parse_data(solution_file_name)))
 print("==  Validating solution ... ==")
 print(check_if_solution_completes_hard_constraints(projects, contributors, parse_data(solution_file_name)))
+
+def get_the_number_of_contributors_and_project_skills_for_projects(projects, assignments):
+    result = []
+    
+    assigned_projects = list(assigments.keys())
+
+    for project in projects:
+        if project in assigned_projects:
+            project_name = project['name']
+            contributors_list = assignments[project_name]
+            num_contributors = len(contributors_list)
+            num_project_skills = len(project['skills'])
+            result.append({project_name: {'NumberOfContributors': num_contributors, 'NumberOfSkills': num_project_skills}})
+
+    return result
+
+# Fourth check
+def check_if_contributors_work_in_one_project_per_time(projects, assignments):
+    list_of_dicts = get_the_number_of_contributors_and_project_skills_for_projects(projects, assignments)
+    for dictionary in list_of_dicts:
+        values = dictionary.values()
+        num_contributors = list(values)[0]['NumberOfContributors']
+        num_skills = list(values)[0]['NumberOfSkills']
+        if num_contributors != num_skills:
+            return False
+    return True
+
+def read_the_number_of_assigned_projects(filename):
+    with open(filename, 'r') as f:
+        first_line = f.readline().strip()
+        if not first_line.isnumeric():
+            return False
+        else:
+            return int(first_line)
+
+# 5 Fifth check
+def check_if_the_number_of_assigned_projects_is_valid(solution_file_name, assigments):
+    if not read_the_number_of_assigned_projects(solution_file_name):
+        return False
+    else:
+        number_of_assigned_projects = read_the_number_of_assigned_projects(solution_file_name)
+        if number_of_assigned_projects != len(assigments):
+            return False
+    return True

@@ -142,6 +142,10 @@ def parse_data(filename):
     # return the parsed data
     return projects
 
+def helpFunction():
+    print("The validator should be called as in the follwing: python validator.py [instnace name] [solution name]")
+    print("Example: python validator.py a.txt output_1_a.txt")
+    exit()
 
 # First check
 def check_if_assigned_projects_exist(projects, assigments):
@@ -168,39 +172,10 @@ def check_if_assigned_contributors_exist(contributors, assigments):
 
 # Third check
 def check_if_assigned_projects_have_contributors(assigments):
-    print(assigments)
     for key in assigments:
         if assigments[key] is None or assigments[key] == "" or not assigments[key]:
             return False
     return True
-
-# 4 check if the combination of each project with his assigned contributor/s is ok
-
-def check_if_solution_completes_hard_constraints(projects, contributors, assigments): 
-    if not check_if_assigned_projects_exist(projects, assigments):
-        return False
-    elif not check_if_assigned_contributors_exist(contributors, assigments):
-        return False
-    elif not check_if_assigned_projects_have_contributors(assigments):
-        return False
-    else:
-        return True
-
-if __name__ == "__main__":
-    arguments = sys.argv
-    if len(arguments) != 3:
-        helpFunction()
-    input_file_name = "Instances/" + arguments[1] + ".txt"
-    if input_file_name == None:
-        helpFunction()
-    solution_file_name = "Solutions/" + arguments[2] + ".txt"
-
-    contributors, projects  = read_contributors_and_projects(input_file_name)
-
-print("==  Calculating fitness ... ==")
-print(get_the_fitness_value(projects, contributors, parse_data(solution_file_name)))
-print("==  Validating solution ... ==")
-print(check_if_solution_completes_hard_constraints(projects, contributors, parse_data(solution_file_name)))
 
 def get_the_number_of_contributors_and_project_skills_for_projects(projects, assignments):
     result = []
@@ -245,3 +220,61 @@ def check_if_the_number_of_assigned_projects_is_valid(solution_file_name, assigm
         if number_of_assigned_projects != len(assigments):
             return False
     return True
+
+def get_project_details(assignments, contributors, projects):
+    project_details = []
+    for project in projects:
+        project_name = project['name']
+        project_skills = project['skills']
+        project_contributors = []
+        for contributor in assignments[project_name]:
+            contributor_skills = contributors[contributor]
+            project_contributors.append({contributor: contributor_skills})
+        project_details.append({'name': project_name, 'skills': project_skills, 'contributors': project_contributors})
+    return project_details
+
+def assign_numbers(project_list, assignments_dict):
+    project_order = {project_name: i for i, project_name in enumerate(assignments_dict.keys())}
+    for project in project_list:
+        project['number'] = project_order[project['name']]
+    return project_list
+
+# 6 check if the combination of each project with his assigned contributor/s is ok
+def check_if_contributors_have_the_correct_skills_for_the_assigned_projects(projects, contributors, assignments):
+    results = assign_numbers(get_project_details(assignments, contributors, projects), assigments)
+    results.sort(key=lambda x: x['number'])
+    print(results)
+
+def check_if_solution_completes_hard_constraints(solution_file_name, projects, contributors, assignments): 
+    if not check_if_assigned_projects_exist(projects, assignments):
+        return False
+    elif not check_if_assigned_contributors_exist(contributors, assignments):
+        return False
+    elif not check_if_assigned_projects_have_contributors(assignments):
+        return False
+    elif not check_if_contributors_work_in_one_project_per_time(projects, assignments):
+        return False
+    elif not check_if_the_number_of_assigned_projects_is_valid(solution_file_name, assigments):
+        return False
+    else:
+        return True
+
+if __name__ == "__main__":
+    arguments = sys.argv
+    if len(arguments) != 3:
+        helpFunction()
+    input_file_name = "Instances/" + arguments[1] + ".txt"
+    if input_file_name == None:
+        helpFunction()
+    solution_file_name = "Solutions/" + arguments[2] + ".txt"
+
+    contributors, projects  = read_contributors_and_projects(input_file_name)
+
+assigments = parse_data(solution_file_name)
+
+print("==  Calculating fitness ... ==")
+# print(get_the_fitness_value(projects, contributors, parse_data(solution_file_name)))
+print("==  Validating solution ... ==")
+# print(check_if_solution_completes_hard_constraints(solution_file_name, projects, contributors, assigments))
+
+check_if_contributors_have_the_correct_skills_for_the_assigned_projects(projects, contributors, assigments)

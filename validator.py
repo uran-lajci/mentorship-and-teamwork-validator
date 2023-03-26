@@ -239,12 +239,55 @@ def assign_numbers(project_list, assignments_dict):
         project['number'] = project_order[project['name']]
     return project_list
 
-# 6 check if the combination of each project with his assigned contributor/s is ok
+def check_skills(lst):
+    for d in lst:
+        for values in d.values():
+            if len(values) == 1:
+                skill, levels = next(iter(values.items()))
+            else:
+                skill, levels = next(iter(values.items()))
+            if levels[0] > levels[1]:
+                return False  # if required skill level is greater than contributor skill level, return False
+            elif levels[0] >= levels[1]:
+                levels[1] += 1  # increment Level of contributor skill by one if required skill is <= contributor skill
+    return True  # if all skills check out, return True
+
+def update_scoring(result, info):
+    for skill, value in result['skills'].items():
+        for contributor in result['contributors']:
+            for name, skills in contributor.items():
+                for n in info:
+                    for x in n:
+                        if x == name:
+                            if list(n[x].keys())[0] in skills:                                    
+                                contributor[name][list(n[x].keys())[0]] = n[name][list(n[x].keys())[0]][1]
+
+# Sixth check
 def check_if_contributors_have_the_correct_skills_for_the_assigned_projects(projects, contributors, assignments):
     results = assign_numbers(get_project_details(assignments, contributors, projects), assigments)
     results.sort(key=lambda x: x['number'])
-    print(results)
 
+    for result in results:
+        info = []
+
+        for skill, value in result['skills'].items():
+            for contributor in result['contributors']:
+                for name, skills in contributor.items():
+                    if skill in skills and skills[skill] >= value:
+                        info.append({name:{skill:[value, skills[skill]]}})
+
+        check_skills(info)
+
+        if not check_skills(info):
+            return False
+        
+        if not info:
+            return False
+        
+        update_scoring(result, info)                     
+
+    return True
+    
 def check_if_solution_completes_hard_constraints(solution_file_name, projects, contributors, assignments): 
     if not check_if_assigned_projects_exist(projects, assignments):
         return False
@@ -273,8 +316,14 @@ if __name__ == "__main__":
 assigments = parse_data(solution_file_name)
 
 print("==  Calculating fitness ... ==")
-# print(get_the_fitness_value(projects, contributors, parse_data(solution_file_name)))
+print(get_the_fitness_value(projects, contributors, parse_data(solution_file_name)))
 print("==  Validating solution ... ==")
-# print(check_if_solution_completes_hard_constraints(solution_file_name, projects, contributors, assigments))
+# if check_if_solution_completes_hard_constraints(solution_file_name, projects, contributors, assigments):
+#     print("The solution is valid")
+# else:
+#     print("Invalid solution")
 
-check_if_contributors_have_the_correct_skills_for_the_assigned_projects(projects, contributors, assigments)
+if check_if_contributors_have_the_correct_skills_for_the_assigned_projects(projects, contributors, assigments):
+    print("The solution is valid")
+else:
+    print("Invalid solution")

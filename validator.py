@@ -142,16 +142,49 @@ def parse_data(filename):
     # return the parsed data
     return projects
 
-def helpFunction():
-    print("The validator should be called as in the follwing: python validator.py [instnace name] [solution name]")
-    print("Example: python validator.py a.txt output_1_a.txt")
-    exit()
+
+# First check
+def check_if_assigned_projects_exist(projects, assigments):
+    project_names = [project["name"] for project in projects]
+    assigned_projects = list(assigments.keys())
+    for assigned_project in assigned_projects:
+        if assigned_project not in project_names:
+            return False
+    return True
+
+def get_assigment_contributors(assigments):
+    assigment_contributors = list(assigments.values())
+    flat_list = [item for sublist in assigment_contributors for item in sublist]
+    unique_list = list(set(flat_list))
+    return unique_list
+
+# Second check
+def check_if_assigned_contributors_exist(contributors, assigments):
+    assigment_contributors = get_assigment_contributors(assigments)
+    for assigment_contributor in assigment_contributors:
+        if assigment_contributor not in contributors:
+            return False
+    return True
+
+# Third check
+def check_if_assigned_projects_have_contributors(assigments):
+    print(assigments)
+    for key in assigments:
+        if assigments[key] is None or assigments[key] == "" or not assigments[key]:
+            return False
+    return True
+
+# 4 check if the combination of each project with his assigned contributor/s is ok
 
 def check_if_solution_completes_hard_constraints(projects, contributors, assigments): 
-    if False:
-        print("Error")
+    if not check_if_assigned_projects_exist(projects, assigments):
+        return False
+    elif not check_if_assigned_contributors_exist(contributors, assigments):
+        return False
+    elif not check_if_assigned_projects_have_contributors(assigments):
+        return False
     else:
-        print("Valid solution")
+        return True
 
 if __name__ == "__main__":
     arguments = sys.argv
@@ -167,4 +200,4 @@ if __name__ == "__main__":
 print("==  Calculating fitness ... ==")
 print(get_the_fitness_value(projects, contributors, parse_data(solution_file_name)))
 print("==  Validating solution ... ==")
-check_if_solution_completes_hard_constraints(projects, contributors, parse_data(solution_file_name))
+print(check_if_solution_completes_hard_constraints(projects, contributors, parse_data(solution_file_name)))

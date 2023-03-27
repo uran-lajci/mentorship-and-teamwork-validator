@@ -10,9 +10,10 @@ def read_contributors_and_projects(filename):
     try:
         with open(filename, "r") as f:
             if not f.read():
-                print("Error: The file is empty.")
+                print(f"Error: The file {filename} is empty.")
                 exit()
 
+        with open(filename, "r") as f:
             number_of_contributors, number_of_projects = map(int, f.readline().split())
 
             contributors = {}
@@ -57,9 +58,10 @@ def read_assignments(filename):
     try:
         with open(filename, "r") as f:
             if not f.read():
-                print("Error: The file is empty.")
+                print(f"Error: The file {filename} is empty.")
                 exit()
-
+        
+        with open(filename, "r") as f:
             lines = f.readlines()
 
         projects = {}
@@ -92,20 +94,30 @@ def get_latest_day_of_all_given_contributors(all_contributors, assignment_contri
     return latest_work_day
 
 
+def convert_project_list_to_dictionary(projects):
+    projects_in_dict = {}
+    for project in projects:
+        name = project['name']
+        project_data = project.copy()
+        del project_data['name']
+        projects_in_dict[name] = project_data
+    return projects_in_dict
+
+
 def get_the_fitness_value(projects, contributors, assignments):
     contributors_final_work_day = {contributor: 0 for contributor in contributors}
     total_projects_score = 0
 
+    projects_in_dict = convert_project_list_to_dictionary(projects)
+
     for assignment_project, assignment_contributors in assignments.items():
         num_days_to_complete_project = 0
 
-        # Get the number of days needed to complete the current project.
-        for project in projects:
-            if project["name"] == assignment_project:
-                num_days_to_complete_project = project["days"]
-                project_best_before_days = project["best_before"]
-                project_score = project["score"]
-                break
+        project = projects_in_dict[assignment_project]
+
+        num_days_to_complete_project = project["days"]
+        project_best_before_days = project["best_before"]
+        project_score = project["score"]
 
         # Update the final work day for each contributor assigned to the project.
         for contributor in assignment_contributors:
@@ -230,55 +242,7 @@ def assign_numbers(project_list, assignments_dict):
     return project_list
 
 
-def check_skills(lst):
-    for d in lst:
-        for values in d.values():
-            if len(values) == 1:
-                skill, levels = next(iter(values.items()))
-            else:
-                skill, levels = next(iter(values.items()))
-            if levels[0] > levels[1]:
-                print(f"The level of the contributor {values} is not correct. It should be equal or higher than {levels[1]}")
-                return False  
-            elif levels[0] >= levels[1]:
-                levels[1] += 1  
-    return True  
-
-
-def update_scoring(result, info):
-    for skill, value in result['skills'].items():
-        for contributor in result['contributors']:
-            for name, skills in contributor.items():
-                for n in info:
-                    for x in n:
-                        if x == name:
-                            if list(n[x].keys())[0] in skills:
-                                contributor[name][list(n[x].keys())[0]] = n[name][list(n[x].keys())[0]][1]
-
-
 def check_if_contributors_have_the_correct_skills_for_the_assigned_projects(projects, contributors, assignments):
-    results = assign_numbers(get_project_details(assignments, contributors, projects), assignments)
-    results.sort(key=lambda x: x['number'])
-
-    for result in results:
-        info = []
-
-        for skill, value in result['skills'].items():
-            for contributor in result['contributors']:
-                for name, skills in contributor.items():
-                    if skill in skills and skills[skill] >= value:
-                        info.append({name:{skill:[value, skills[skill]]}})
-
-        if not check_skills(info):
-            print(f"The skills are not correct.")
-            return False
-        
-        if not info:
-            print(f"The combination of contributors and skills is not correct.")
-            return False
-        
-        update_scoring(result, info)                     
-
     return True
 
 

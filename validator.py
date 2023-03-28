@@ -242,9 +242,90 @@ def assign_numbers(project_list, assignments_dict):
     return project_list
 
 
-def check_if_contributors_have_the_correct_skills_for_the_assigned_projects(projects, contributors, assignments):
+def possible_mentors(current_contributor, current_skill, current_level, contributors, contributor_names):
+    possible_mentors = []
+    for name in contributor_names:
+        if name != current_contributor:
+            possible_mentors.append({name:contributors[name]})
+    
+    for p_mentor in possible_mentors:
+        p_mentor_skills = list(p_mentor.values())
+        for s in p_mentor_skills:
+            if current_skill in s and s[current_skill] >= current_level:
+                return True
+               
+    return False
+
+
+def validate_combinations_and_update_scoring(information, contributors):
+    for assignments in information:
+        new_assignments = {'name': assignments['name'], 'skills': {}, 'contributors': {}}
+
+        for contributor in assignments['contributors']:
+            accupied_skill = ""
+            contributor_skills = {}
+            for skill, rating in assignments['skills'].items():
+                complete_contributor = contributors[contributor]
+                if skill in complete_contributor:
+                    if len(contributor_skills) == 0:
+                        contributor_skills[skill] = rating
+                        accupied_skill = skill
+            
+            if len(accupied_skill) > 0:
+                del assignments['skills'][accupied_skill]
+            new_assignments['contributors'][contributor] = contributor_skills
+        
+        del new_assignments['skills']
+
+        new_contributors = new_assignments["contributors"]
+
+        for new_c, info in new_contributors.items():
+            complete_new_c = contributors[new_c]
+            for skill, level in complete_new_c.items():
+                for s_skill, l_level in info.items():
+                    
+                    if s_skill == skill and level >= l_level:
+                        if l_level == level or l_level - 1 == level:
+                            contributors[new_c][skill] += 1
+                    elif s_skill == skill and level == l_level - 1:
+                        if possible_mentors(new_c, skill, l_level, contributors, assignments['contributors']):
+                            contributors[new_c][skill] += 1
+                        else:
+                            print(f"Error. Could not find a mentor for this contributor {new_c} for the skill {skill} with level {l_level}\n")
+                            failure_reason = input("Write y if you want to see the full failure reason: ")
+
+                            if failure_reason == "y":
+                                print(f"Contributers that are in the same project {assignments['contributors']}\n")
+                                project_contributors = [] 
+                                for name in assignments['contributors']:
+                                    if name != new_c:
+                                        project_contributors.append({name:contributors[name]})
+                                print(f"The skills and levels of those contributors {project_contributors}")
+                            return False
     return True
 
+
+# convertd data to make it easier to validate the project and contributor combination
+def transformed_data(assignments, projects):
+    trasformed_data = []
+    
+    for assignment in assignments:
+        assigment_information = {}
+        assigment_information["name"] = assignment
+
+        for project in projects:
+            if assignment == project["name"]:
+                assigment_information["skills"] = project["skills"]
+                trasformed_data.append(assigment_information)
+
+        assigment_information["contributors"] = assignments[assignment]
+    
+    return trasformed_data
+
+def check_if_contributors_have_the_correct_skills_for_the_assigned_projects(projects, contributors, assignments):
+
+    return validate_combinations_and_update_scoring(transformed_data(assignments, projects), contributors)
+        
 
 def check_if_solution_completes_hard_constraints(solution_file_name, projects, contributors, assignments): 
     if not check_if_assigned_projects_exist(projects, assignments):

@@ -113,6 +113,11 @@ def get_the_fitness_value(projects, contributors, assignments):
     for assignment_project, assignment_contributors in assignments.items():
         num_days_to_complete_project = 0
 
+        if not assignment_project in projects_in_dict:
+            print(f"Error. The project {assignment_project} is not in correct.")
+            print("Check if the input and output files correspond with each other.")
+            exit()
+
         project = projects_in_dict[assignment_project]
 
         num_days_to_complete_project = project["days"]
@@ -196,6 +201,16 @@ def check_if_contributors_work_in_one_project_per_time(projects, assignments):
         num_skills = list(values)[0]['NumberOfSkills']
         if num_contributors != num_skills:
             print(f"There are contributors that work in multiple projects.")
+            return False
+    return True
+
+
+def check_if_number_of_contributors_in_project_is_the_same_as_project_required(projects, contributors, assignments):
+    for project in projects:
+        number_of_skills = len(project["skills"])
+        number_of_project_contributors = len(assignments[project["name"]])
+        if number_of_skills != number_of_project_contributors:
+            print(f"Error. The number of contributors in project {project['name']} is wrong.")
             return False
     return True
 
@@ -336,6 +351,8 @@ def check_if_solution_completes_hard_constraints(solution_file_name, projects, c
         return False
     elif not check_if_contributors_work_in_one_project_per_time(projects, assignments):
         return False
+    elif not check_if_number_of_contributors_in_project_is_the_same_as_project_required(projects, contributors, assignments):
+        return False
     elif not check_if_the_number_of_assigned_projects_is_valid(solution_file_name, assignments):
         return False
     elif not check_if_contributors_have_the_correct_skills_for_the_assigned_projects(projects, contributors, assignments):
@@ -373,4 +390,5 @@ if __name__ == "__main__":
     if check_if_solution_completes_hard_constraints(solution_file_name, projects, contributors, assignments):
         print("The solution is valid.")
     else:
-        print("Invalid solution.")    
+        print("Invalid solution.")
+        

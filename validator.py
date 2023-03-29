@@ -32,11 +32,11 @@ def read_contributors_and_projects(filename):
             for i in range(number_of_projects):
                 name, di, si, bi, ri = f.readline().split()
                 di, si, bi, ri = int(di), int(si), int(bi), int(ri)
-                skills = {}
+                skills = []
                 for j in range(ri):
                     skill, lk = f.readline().split()
                     lk = int(lk)
-                    skills[skill] = lk
+                    skills.append({skill:lk})
 
                 project = {
                     "name": name,
@@ -114,7 +114,7 @@ def get_the_fitness_value(projects, contributors, assignments):
         num_days_to_complete_project = 0
 
         if not assignment_project in projects_in_dict:
-            print(f"Error. The project {assignment_project} is not in correct.")
+            print(f"Error. The project {assignment_project} is not correct.")
             print("Check if the input and output files correspond with each other.")
             exit()
 
@@ -207,11 +207,12 @@ def check_if_contributors_work_in_one_project_per_time(projects, assignments):
 
 def check_if_number_of_contributors_in_project_is_the_same_as_project_required(projects, contributors, assignments):
     for project in projects:
-        number_of_skills = len(project["skills"])
-        number_of_project_contributors = len(assignments[project["name"]])
-        if number_of_skills != number_of_project_contributors:
-            print(f"Error. The number of contributors in project {project['name']} is wrong.")
-            return False
+        if project["name"] in assignments:
+            number_of_skills = len(project["skills"])
+            number_of_project_contributors = len(assignments[project["name"]])
+            if number_of_skills != number_of_project_contributors:
+                print(f"Error. The number of contributors in project {project['name']} is wrong.")
+                return False
     return True
 
 
@@ -272,75 +273,72 @@ def possible_mentors(current_contributor, current_skill, current_level, contribu
     return False
 
 
-def validate_combinations_and_update_scoring(information, contributors):
-    for assignments in information:
-        new_assignments = {'name': assignments['name'], 'skills': {}, 'contributors': {}}
+# convertd data to make it easier to validate the project and contributor combination
+def transformed_data(assignments, projects):
+    trasformed_data = []
+    for assignment in assignments:
+        assigment_information = {}
+        assigment_information["name"] = assignment
+        for project in projects:
+            if assignment == project["name"]:
+                assigment_information["skills"] = project["skills"]
+                trasformed_data.append(assigment_information)
+        assigment_information["contributors"] = assignments[assignment]
 
-        for contributor in assignments['contributors']:
-            accupied_skill = ""
-            contributor_skills = {}
-            for skill, rating in assignments['skills'].items():
-                complete_contributor = contributors[contributor]
-                if skill in complete_contributor:
-                    if len(contributor_skills) == 0:
-                        contributor_skills[skill] = rating
-                        accupied_skill = skill
-            
-            if len(accupied_skill) > 0:
-                del assignments['skills'][accupied_skill]
-            new_assignments['contributors'][contributor] = contributor_skills
-        
-        del new_assignments['skills']
+    return trasformed_data
 
+
+def convert_assigments(information):
+    skills = information["skills"]
+    contributors = information["contributors"]
+    new_info = {"name":information["name"], "contributors":{}}
+
+    i = 0
+    for skill in skills:
+        new_info["contributors"][contributors[i]] = skill
+        i += 1
+
+    return new_info
+
+
+def check_if_contributors_have_the_correct_skills_for_the_assigned_projects(projects, contributors, assignments):
+    for assignments in transformed_data(assignments, projects):
+        name = assignments["name"]    
+        new_assignments = convert_assigments(assignments)
         new_contributors = new_assignments["contributors"]
 
         for new_c, info in new_contributors.items():
-            complete_new_c = contributors[new_c]
-            for skill, level in complete_new_c.items():
+            for skill, level in contributors[new_c].items():
                 for s_skill, l_level in info.items():
-                    
                     if s_skill == skill and level >= l_level:
                         if l_level == level or l_level - 1 == level:
                             contributors[new_c][skill] += 1
-                    elif s_skill == skill and level == l_level - 1:
+                            
+                    elif s_skill == skill and contributors[new_c][skill] == l_level - 1: 
                         if possible_mentors(new_c, skill, l_level, contributors, assignments['contributors']):
-                            contributors[new_c][skill] += 1
+                            contributors[new_c][skill] += 1    
                         else:
-                            print(f"Error. Could not find a mentor for this contributor {new_c} for the skill {skill} with level {l_level}\n")
+                            print(f"Error. Could not find a mentor for this contributor {new_c} in project {name} for the skill {skill} with level {l_level}\n")
                             failure_reason = input("Write y if you want to see the full failure reason: ")
 
                             if failure_reason == "y":
+                                print(f"Contributor {new_c} information {contributors[new_c]}")
                                 print(f"Contributers that are in the same project {assignments['contributors']}\n")
                                 project_contributors = [] 
                                 for name in assignments['contributors']:
                                     if name != new_c:
                                         project_contributors.append({name:contributors[name]})
                                 print(f"The skills and levels of those contributors {project_contributors}")
-                            return False
+                            return False 
+    
+        for contributor_name, skill_and_level in new_contributors.items():
+            for contributor_skill in contributors[contributor_name]:
+                skills = list(skill_and_level.keys())
+                for skill in skills:
+                    if skill == contributor_skill and skill_and_level[skill] > contributors[contributor_name][contributor_skill]:
+                        return False
     return True
 
-
-# convertd data to make it easier to validate the project and contributor combination
-def transformed_data(assignments, projects):
-    trasformed_data = []
-    
-    for assignment in assignments:
-        assigment_information = {}
-        assigment_information["name"] = assignment
-
-        for project in projects:
-            if assignment == project["name"]:
-                assigment_information["skills"] = project["skills"]
-                trasformed_data.append(assigment_information)
-
-        assigment_information["contributors"] = assignments[assignment]
-    
-    return trasformed_data
-
-def check_if_contributors_have_the_correct_skills_for_the_assigned_projects(projects, contributors, assignments):
-
-    return validate_combinations_and_update_scoring(transformed_data(assignments, projects), contributors)
-        
 
 def check_if_solution_completes_hard_constraints(solution_file_name, projects, contributors, assignments): 
     if not check_if_assigned_projects_exist(projects, assignments):
@@ -391,4 +389,3 @@ if __name__ == "__main__":
         print("The solution is valid.")
     else:
         print("Invalid solution.")
-        

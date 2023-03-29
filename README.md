@@ -19,4 +19,10 @@ and results in the terminal will be like this, telling us if the solution is val
 
 or for this other example tells us that could not find a mentor for a specific contributor like this:
 
-![image](https://user-images.githubusercontent.com/58117020/228458178-1656b250-a0e2-4906-b4dd-d73470beb081.png)
+![image](https://user-images.githubusercontent.com/58117020/228458784-c0397df6-7ba4-48c4-945c-4d2d08bc13fa.png)
+
+and if you want further information why this solution is not valid just type "y", and the terminal goes like this:
+
+![image](https://user-images.githubusercontent.com/58117020/228459163-55bee98f-c061-43c7-8321-a5086909232b.png)
+
+with full explanation why this solution is not valid.

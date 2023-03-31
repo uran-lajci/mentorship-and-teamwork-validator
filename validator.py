@@ -237,6 +237,34 @@ def check_if_the_number_of_assigned_projects_is_valid(solution_file_name, assign
         return True
 
 
+def check_if_contributors_have_at_least_one_required_project_skill(projects, contributors, assignments):
+    error_message = []
+    list1 = []
+    number_contributors = 0
+    for assignment_project_name, assignment_contributors in assignments.items():
+        for assignment_contributor in assignment_contributors:
+            number_contributors += 1
+            i = 0
+            
+            for project in projects:
+                if assignment_project_name == project["name"]:
+                    project_skills = project["skills"]
+                    for skill in contributors[assignment_contributor]:
+                        number_contributor_skills = len(contributors[assignment_contributor])
+                        for project_skill in project_skills:
+                            if skill in project_skill:
+                                i += 1
+            if i > 0:
+                list1.append(1)
+            else:
+                error_message.append(assignment_project_name)
+    
+    if sum(list1) != number_contributors:
+        print(f"Error. The contributors that are in the project do not have the requried skills for the projects {error_message}")
+        return False
+    return True
+
+
 def possible_mentors(current_contributor, current_skill, current_level, contributors, contributor_names):
     possible_mentors = []
     for name in contributor_names:
@@ -331,6 +359,8 @@ def check_if_solution_completes_hard_constraints(solution_file_name, projects, c
     elif not check_if_number_of_contributors_in_project_is_the_same_as_project_required(projects, contributors, assignments):
         return False
     elif not check_if_the_number_of_assigned_projects_is_valid(solution_file_name, assignments):
+        return False
+    elif not check_if_contributors_have_at_least_one_required_project_skill(projects, contributors, assignments):
         return False
     elif not check_if_contributors_have_the_correct_skills_for_the_assigned_projects(projects, contributors, assignments):
         return False

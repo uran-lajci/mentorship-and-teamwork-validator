@@ -237,27 +237,6 @@ def check_if_the_number_of_assigned_projects_is_valid(solution_file_name, assign
         return True
 
 
-def get_project_details(assignments, contributors, projects):
-    project_details = []
-    for project in projects:
-        project_name = project['name']
-        project_skills = project['skills']
-        project_contributors = []
-        if project_name in assignments:
-            for contributor in assignments[project_name]:
-                contributor_skills = contributors[contributor]
-                project_contributors.append({contributor: contributor_skills})
-            project_details.append({'name': project_name, 'skills': project_skills, 'contributors': project_contributors})
-    return project_details
-
-
-def assign_numbers(project_list, assignments_dict):
-    project_order = {project_name: i for i, project_name in enumerate(assignments_dict.keys())}
-    for project in project_list:
-        project['number'] = project_order[project['name']]
-    return project_list
-
-
 def possible_mentors(current_contributor, current_skill, current_level, contributors, contributor_names):
     possible_mentors = []
     for name in contributor_names:

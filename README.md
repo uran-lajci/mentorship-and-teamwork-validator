@@ -26,3 +26,11 @@ and if you want further information why this solution is not valid just type "y"
 ![image](https://user-images.githubusercontent.com/58117020/228459163-55bee98f-c061-43c7-8321-a5086909232b.png)
 
 with full explanation why this solution is not valid.
+
+
+# Java Validator Guide
+![image](https://user-images.githubusercontent.com/117693854/230823931-9a6400ed-61b9-40f7-9ff7-b392ce4ed2e3.png)
+
+![image](https://user-images.githubusercontent.com/117693854/230827686-e2c49a82-adab-4653-a718-077873b50c6e.png)
+
+![image](https://user-images.githubusercontent.com/117693854/230827701-85e9ea5b-1be8-4505-9d2f-a3479ee64fa8.png)

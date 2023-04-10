@@ -5,4 +5,3 @@ NonExistingProjectName
 Anna
 WebChat
 Maria Bob
-

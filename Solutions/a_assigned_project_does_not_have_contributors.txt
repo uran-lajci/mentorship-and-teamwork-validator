@@ -5,5 +5,3 @@ Logging
 
 WebChat
 Maria Bob
-
-

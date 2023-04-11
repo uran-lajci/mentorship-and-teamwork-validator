@@ -29,7 +29,23 @@ with full explanation why this solution is not valid.
 
 
 # Java Validator Guide
+First you type
+```java
+javac ValidatorScript.java
+```
+
+and than you type in the console, so "a" is the first instance and "output_1_a" is the solution of that instance, so we can validate that 
+
+
+```java
+java ValidatorScript a output_1_a
+```
+### Valid solution
+to execute the first example, like the figure below, where we can see that our soultion provided in file output_1_a is a valid solution
 ![image](https://user-images.githubusercontent.com/117693854/230823931-9a6400ed-61b9-40f7-9ff7-b392ce4ed2e3.png)
+
+### Non Valid solution
+We also demonstrated other possible outputs where the soultuion you can provide is not valid, and in the error section is the reason why that solution is not valid.
 
 ![image](https://user-images.githubusercontent.com/117693854/230827686-e2c49a82-adab-4653-a718-077873b50c6e.png)
 
